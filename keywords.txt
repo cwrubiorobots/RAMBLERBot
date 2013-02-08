@@ -1,0 +1,23 @@
+#######################################
+# Syntax Coloring Map ZumoBuzzer
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+RAMBLERBot	KEYWORD1
+AngleUtilities	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+#playFrequency	KEYWORD2
+#playNote	KEYWORD2
+angleDifference	KEYWORD2
+loop100Hz	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
