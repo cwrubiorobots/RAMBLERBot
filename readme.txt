@@ -13,7 +13,9 @@ Building
 --------------------------------------------------------------------------------
 
 Restart the Arduino application. 
+
 Go to Examples->RAMBLERBot->ExampleRobot
+
 Run the ExampleRobot program.
 
 In order to modify behavior, modify the .cpp and .h files in the library:

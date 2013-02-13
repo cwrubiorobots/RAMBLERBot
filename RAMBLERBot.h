@@ -10,6 +10,7 @@
 #include <Pushbutton.h>
 #include <Wire.h>
 #include <LSM303.h>
+#include <RamblerAlgorithm.h>
 
 // RAMBLERBot:
 // Implements the RAMBLER Algorithm for the Arduino platform
@@ -40,6 +41,8 @@ class RAMBLERBot
     //Member Functions
     bool speedLimit(int *speed, int speed_goal);
   
+    RamblerAlgorithm brain;
+  
     // Member classes for hardware abstraction
     ZumoBuzzer buzzer_;
     ZumoMotors motors_; 
@@ -55,6 +58,8 @@ class RAMBLERBot
     bool start_;
     
     // Member variables
+    float v_;
+    float w_;
     int max_accel_per_loop_;
     int motor_left_;
     int motor_right_;
@@ -64,6 +69,7 @@ class RAMBLERBot
     enum rambler_state_t {
       ESTOP = 0,
       ESTOP_TO_ACTIVE,
+      COCKROACH,
       FORWARD,
       TURN_LEFT,
       PAUSE

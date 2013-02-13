@@ -119,7 +119,14 @@ void RAMBLERBot::loop10Hz()
         index_ = 0;
         state_ = FORWARD;
       }          
-      break;
+    break;
+      
+    case COCKROACH:
+      // Todo: Calibrate Velocity!!
+      brain.ProcessInput(random(1001),random(1001),0,0.0,0.0,0);
+      brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
+      //motor_left_goal_ = v - 0.1
+    break;
       
     case FORWARD:
       if (index_ < 10)
@@ -139,7 +146,7 @@ void RAMBLERBot::loop10Hz()
         index_ = 0;
         state_ = TURN_LEFT;
       }
-      break;
+    break;
       
       
     case TURN_LEFT:
@@ -194,12 +201,12 @@ void RAMBLERBot::loop10Hz()
        // Serial.print(" Offset: ");
        // Serial.println(AngleUtilities::angleDifference(startHeading,heading));
       // }
-      break;
+    break;
       
       
     default:
       state_ = ESTOP;
-      break;
+    break;
   }
 }
 
