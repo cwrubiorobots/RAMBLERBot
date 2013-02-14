@@ -42,7 +42,11 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
         // Pivot rate: (pivot const) * (straight velocity) * (dt)
         // straight velocity = 3 bodylen / s
         // pivot const = .575 pivots / bodylen <--- If goal is not in sight        
-        float pivot_rate = 3 * .575 / RAMBLER_HZ;
+        float pivot_rate = 3 * .575 / RAMBLER_HZ * 1000;
+        Serial.print("Checking exit: ");
+        Serial.print(rand1);
+        Serial.print("  ");
+        Serial.println(pivot_rate);
         if (rand1 < pivot_rate)
         {
           pivot_count_ = 0;
@@ -61,10 +65,14 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
     //  1. Go to STRAIGHT when pivot done
     //    What happens if we hit a wall during a pivot??
     case RamblerAlgorithm::PIVOT:
+      Serial.print("Checking exit: ");
+      Serial.print(rand1);
+      Serial.print("  ");
+      Serial.println(pivot_count_ * 100);
       if (rand1 < pivot_count_ * 100)
       {
         pivot_count_ = 0;
-        state_ = RamblerAlgorithm::PIVOT;
+        state_ = RamblerAlgorithm::STRAIGHT;
       }
       else
       {

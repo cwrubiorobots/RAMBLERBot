@@ -36,6 +36,7 @@ class RAMBLERBot
     int getMotorLeft() {return motor_left_;}
     int getMotorRight() {return motor_right_;}
     int getHeading() {return heading_curr_;}
+    RamblerAlgorithm::RamblerState getCockroachState() {return brain.getState();} //RamblerAlgorithm::STRAIGHT; }//
     
   private:
     //Member Functions

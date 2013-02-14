@@ -117,7 +117,7 @@ void RAMBLERBot::loop10Hz()
       else
       {
         index_ = 0;
-        state_ = FORWARD;
+        state_ = COCKROACH;
       }          
     break;
       
@@ -125,82 +125,17 @@ void RAMBLERBot::loop10Hz()
       // Todo: Calibrate Velocity!!
       brain.ProcessInput(random(1001),random(1001),0,0.0,0.0,0);
       brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
-      //motor_left_goal_ = v - 0.1
     break;
       
     case FORWARD:
-      if (index_ < 10)
-      {
-        index_++;
-        motor_left_goal_ = 300;
-        motor_right_goal_ = 300;
-      }
-      else if (index_ < 20)
-      {
-        index_++;
-        motor_left_goal_ = 0;
-        motor_right_goal_ = 0;
-      }
-      else
-      {
-        index_ = 0;
-        state_ = TURN_LEFT;
-      }
+      motor_left_goal_ = 200;
+      motor_right_goal_ = 200;
+      state_ = FORWARD;
     break;
       
       
     case TURN_LEFT:
-      if (!start_)
-      {
-        if (index_ < 1)
-        {
-          index_++;
-        }
-        else
-        {
-          index_ = 0;
-          heading_start_ = heading_curr_;
-          start_ = true;
-          motor_right_goal_ = +100;
-          motor_left_goal_ = -100;
-        }          
-      }
-      else
-      {
-        if (AngleUtilities::angleDifference(heading_start_,heading_curr_) > 90)
-        {
-          motor_right_goal_ = 0;
-          motor_left_goal_ = 0;
-          motor_right_ = 0;
-          motor_left_ = 0;
-          motors_.setRightSpeed(0);
-          motors_.setLeftSpeed(0);
-          start_ = false;
-          state_ = FORWARD;
-        }
-        else
-        {       
-          //Serial.print("Start: ");
-          //Serial.print(heading_start_);
-          //Serial.print(" Current: ");
-          //Serial.print(heading_curr_);
-          //Serial.print(" Offset: ");
-          //Serial.println(AngleUtilities::angleDifference(heading_start_,heading_curr_));
-        }
-      }
-      
-      
-      // while (true)
-      // {
-       // compass.read();
-       // heading = compass.heading((LSM303::vector){0,-1,0})-180;        
-       // Serial.print("Start: ");
-       // Serial.print(startHeading);
-       // Serial.print(" Current: ");
-       // Serial.print(heading);
-       // Serial.print(" Offset: ");
-       // Serial.println(AngleUtilities::angleDifference(startHeading,heading));
-      // }
+      state_ = ESTOP;
     break;
       
       

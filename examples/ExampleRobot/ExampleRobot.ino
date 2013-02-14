@@ -43,7 +43,9 @@ void loop()
       Serial.print(" Left Motor: ");
       Serial.print(robot.getMotorLeft());
       Serial.print(" Right Motor: ");
-      Serial.println(robot.getMotorRight());
+      Serial.print(robot.getMotorRight());
+      Serial.print(" CockState: ");
+      Serial.println(robot.getCockroachState());
     }
   }  
 }

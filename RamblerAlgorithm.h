@@ -1,6 +1,7 @@
 #ifndef RamblerAlgorithm_h
 #define RamblerAlgorithm_h
 
+#include <Arduino.h>
 #include <LList.h>
 
 /*
@@ -54,6 +55,8 @@ class RamblerAlgorithm
     // when Process() is called
     //  - algorithm_state_t state: New state to set
     void SetState(RamblerState state) {state_ = state;} 
+    
+    RamblerState getState() {return state_;}
     
     
   private:
