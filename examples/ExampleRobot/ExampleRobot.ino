@@ -1,3 +1,11 @@
+/*
+Rambler Cockroach Robot
+
+EJ Kreinar
+Charles Hart
+David Chrzanowski
+*/
+
 #include <RAMBLERBot.h>
 #include <ZumoMotors.h>
 #include <ZumoBuzzer.h>

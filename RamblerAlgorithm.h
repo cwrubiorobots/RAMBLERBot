@@ -57,6 +57,7 @@ class RamblerAlgorithm
     void SetState(RamblerState state) {state_ = state;} 
     
     RamblerState getState() {return state_;}
+    unsigned char getLights();
     
     
   private:

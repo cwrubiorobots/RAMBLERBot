@@ -10,6 +10,7 @@
 #include <Pushbutton.h>
 #include <Wire.h>
 #include <LSM303.h>
+#include <ZumoLights.h>
 #include <RamblerAlgorithm.h>
 
 // RAMBLERBot:
@@ -47,6 +48,7 @@ class RAMBLERBot
     // Member classes for hardware abstraction
     ZumoBuzzer buzzer_;
     ZumoMotors motors_; 
+    ZumoLights lights_;
     Pushbutton button_;
     LSM303 compass_;
     
@@ -71,8 +73,9 @@ class RAMBLERBot
       ESTOP = 0,
       ESTOP_TO_ACTIVE,
       COCKROACH,
-      FORWARD,
-      TURN_LEFT,
+      TEST_FORWARD,
+      TEST_PIVOT,
+      TEST_END,
       PAUSE
     };
     rambler_state_t state_;

@@ -12,7 +12,7 @@ RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
   pinMode(LED_PIN, OUTPUT);
   state_ = ESTOP;
   heading_ = 0;
-  setAccel(10);
+  setAccel(25);
 
   headingAvg_.SetWindow(10);
 }
@@ -33,7 +33,10 @@ void RAMBLERBot::init()
   
   // RAMBLER Leonardo
   compass_.m_min.x = 662; compass_.m_min.y = 241; compass_.m_min.z = 1509;
-  compass_.m_max.x = 1024; compass_.m_max.y = 753; compass_.m_max.z = 1726;;
+  compass_.m_max.x = 1024; compass_.m_max.y = 753; compass_.m_max.z = 1726;
+  
+  // Seed random generator
+  randomSeed(analogRead(2)); // Analog 2 is unused, so take a reading
 }
 
 void RAMBLERBot::setAccel(int maxAccel)
@@ -80,6 +83,7 @@ void RAMBLERBot::loop10Hz()
     motor_left_goal_ = 0;
     motor_right_goal_ = 0;
     buzzer_.playNote(NOTE_G(5),100,15);
+    lights_.AllOff();
     button_.waitForRelease();  // wait here for the button to be released
   }
   
@@ -87,8 +91,17 @@ void RAMBLERBot::loop10Hz()
   switch (state_)
   {
     case ESTOP:
+      if (index_++ >= 5)
+      {
+        lights_.ToggleLED2();
+        index_ = 0;
+      }
+      motor_left_goal_ = 0;
+      motor_right_goal_ = 0;
       if (button_.isPressed())
       {
+        index_ = 0;
+        lights_.TurnOffLED2();
         state_ = ESTOP_TO_ACTIVE;
         button_.waitForRelease();  // wait here for the button to be released
       }
@@ -118,27 +131,59 @@ void RAMBLERBot::loop10Hz()
       {
         index_ = 0;
         state_ = COCKROACH;
-      }          
+      }
     break;
       
     case COCKROACH:
       // Todo: Calibrate Velocity!!
       brain.ProcessInput(random(1001),random(1001),0,0.0,0.0,0);
       brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
+      lights_.DisplayChar(brain.getLights());
     break;
       
-    case FORWARD:
-      motor_left_goal_ = 200;
-      motor_right_goal_ = 200;
-      state_ = FORWARD;
+    case TEST_FORWARD:
+      motor_left_goal_ = 250;
+      motor_right_goal_ = 250;
+      state_ = TEST_PIVOT;
     break;
-      
-      
-    case TURN_LEFT:
-      state_ = ESTOP;
+    
+    case TEST_PIVOT:
+      if (index_ < 10)
+      {
+        motor_left_goal_ = 250;
+        motor_right_goal_ = 250;
+        brain.SetState(RamblerAlgorithm::PIVOT);
+        index_++;
+      }
+      else
+      {
+        brain.ProcessInput(random(1001),random(1001),0,0.0,0.0,0);
+        brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
+        Serial.println("2");
+        if (brain.getState() == RamblerAlgorithm::STRAIGHT)
+        {
+          index_ = 0;
+          state_ = TEST_END;
+        }
+      }
     break;
-      
-      
+    
+    case TEST_END:
+      if (index_ < 5)
+      {
+        motor_left_goal_ = 250;
+        motor_right_goal_ = 250;
+        index_++;
+      }
+      else
+      {
+        motor_left_goal_ = 0;
+        motor_right_goal_ = 0;
+        index_ = 0;
+        state_ = ESTOP;
+      }
+    break;
+     
     default:
       state_ = ESTOP;
     break;
