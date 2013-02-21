@@ -68,8 +68,14 @@ void RAMBLERBot::loop50Hz()
 // SLOW LOOP: 10 Hz-ish
 void RAMBLERBot::loop10Hz()
 {
-  heading_curr_ = headingAvg_.AngleMean();
+  int v_fwd, angle, goal_dir;
+  float  ant_right, ant_left;
   
+  heading_curr_ = headingAvg_.AngleMean();
+  v_fwd = (motor_right_+motor_left_)/2;
+  //Serial.print("Velocity: ");
+  //Serial.println(v_fwd);
+    
   // Check the Emergency Stop
   if (state_ != ESTOP && button_.isPressed())
   {
@@ -89,7 +95,7 @@ void RAMBLERBot::loop10Hz()
   
   // Progress through the overall Robot States
   switch (state_)
-  {
+  {    
     case ESTOP:
       if (index_++ >= 5)
       {
@@ -136,7 +142,13 @@ void RAMBLERBot::loop10Hz()
       
     case COCKROACH:
       // Todo: Calibrate Velocity!!
-      brain.ProcessInput(random(1001),random(1001),0,0.0,0.0,0);
+      //  -> Calibrated: At full battery charge, motor_left_ and motor_right_ = 250 
+      //        makes the robot run approx 3 bodylen/s
+      angle = 0;
+      goal_dir = 0;
+      ant_left = 0;
+      ant_right = 0;
+      brain.ProcessInput(random(1001),random(1001),v_fwd,angle,ant_right,ant_left,goal_dir);
       brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
       lights_.DisplayChar(brain.getLights());
     break;
@@ -157,7 +169,7 @@ void RAMBLERBot::loop10Hz()
       }
       else
       {
-        brain.ProcessInput(random(1001),random(1001),0,0.0,0.0,0);
+        brain.ProcessInput(random(1001),random(1001),v_fwd,0,0.0,0.0,0);
         brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
         Serial.println("2");
         if (brain.getState() == RamblerAlgorithm::STRAIGHT)

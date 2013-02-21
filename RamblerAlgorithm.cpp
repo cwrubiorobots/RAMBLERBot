@@ -13,6 +13,7 @@ RamblerAlgorithm::RamblerAlgorithm()
 
 RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
                     int rand1, int rand2,
+                    int v_fwd,
                     int angle, 
                     float ant_rgt, 
                     float ant_lft, 
@@ -43,7 +44,8 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
         // straight velocity = 3 bodylen / s
         // pivot const = .575 pivots / bodylen <--- If goal is not in sight        
         //float pivot_rate = 3 * .575 / RAMBLER_HZ * 1000;
-        float pivot_rate = 1.5 * .575 / RAMBLER_HZ * 1000; // <-- Avg pivot time is ~3 timesteps, so pivot less
+        //float pivot_rate = 1.5 * .575 / RAMBLER_HZ * 1000; // <-- Avg pivot time is ~3 timesteps, so pivot less
+        float pivot_rate = v_fwd * .575 / RAMBLER_HZ * 10; // v_fwd ranges from 0-250 where 250 is approx 3 bodylen/s
         Serial.print("Checking exit: ");
         Serial.print(rand1);
         Serial.print("  ");
