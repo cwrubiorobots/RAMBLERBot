@@ -53,11 +53,13 @@ public:
   // Deletes an element from the list if necessary
   void Push(double x)
   {
+    m_total += x;
     m_vals.push_back(x);  // Add a new element
     if (m_n < m_window)
       m_n++;                // Increment number of elements
     else
-      m_vals.pop_front();
+      m_total -= m_vals.pop_front();
+    m_mean = m_total/static_cast<float>(m_n);
   }
 
   // Returns the number of data values
@@ -69,16 +71,7 @@ public:
   // Calculates the mean of the moving average
   float Mean()
   {
-    if (m_n == m_window)
-    {
-      float total = 0;
-      for (int i = 0; i < m_window; i++)
-      {
-        total += m_vals.getElement(i); //Todo: Iterate through list itself
-      }
-      m_mean = total / static_cast<float>(m_window);
-    }
-    return (m_n == m_window) ? m_mean : 0.0;
+    return m_mean;
   }
   
   // Calculates the mean Angle of the moving average
@@ -100,9 +93,10 @@ public:
 
 private:
   int m_window; // Size of window
-  int m_n;        // Current total # of elements in filter
+  int m_n;      // Current total # of elements in filter
   LList<int> m_vals;
   float m_mean;
+  float m_total;
 };
 
 #endif

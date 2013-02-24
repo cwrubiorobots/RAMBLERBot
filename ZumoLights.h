@@ -37,12 +37,12 @@ class ZumoLights
     
     
   private:
-    unsigned char _pin1;
-    unsigned char _pin2;
-    unsigned char _pin3;
-    bool _LED1;
-    bool _LED2;
-    bool _LED3;
+    unsigned char pin1_;
+    unsigned char pin2_;
+    unsigned char pin3_;
+    bool LED1_;
+    bool LED2_;
+    bool LED3_;
     
     void ShowLights();
     

@@ -11,6 +11,7 @@
 #include <Wire.h>
 #include <LSM303.h>
 #include <ZumoLights.h>
+#include <ZumoWhiskers.h>
 #include <RamblerAlgorithm.h>
 
 // RAMBLERBot:
@@ -50,7 +51,8 @@ class RAMBLERBot
     ZumoMotors motors_; 
     ZumoLights lights_;
     Pushbutton button_;
-    LSM303 compass_;
+    ZumoWhiskers whiskers_;
+    // LSM303 compass_;
     
     // Helper classes and variables
     int heading_;
@@ -74,6 +76,7 @@ class RAMBLERBot
       ESTOP_TO_ACTIVE,
       COCKROACH,
       TEST_FORWARD,
+      TEST_WALLFOLLOW,
       TEST_PIVOT,
       TEST_END,
       PAUSE

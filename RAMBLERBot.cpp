@@ -7,6 +7,15 @@
 // - ??
 
 // constructor
+
+int fabs(int val)
+{
+  if (val < 0)
+    return -1*val;
+  else
+    return val;
+}
+
 RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
 {
   pinMode(LED_PIN, OUTPUT);
@@ -19,21 +28,21 @@ RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
 
 void RAMBLERBot::init()
 {
-  Wire.begin();
-  compass_.init();
-  compass_.enableDefault();
+  // Wire.begin();
+  // compass_.init();
+  // compass_.enableDefault();
   
-  // Calibration values. Use the Calibrate example program to get the values for
-  // your compass.
-  // M min X: -644 Y: 49 Z: 1655 M max X: -27 Y: 820 Z: 1772
+  // // Calibration values. Use the Calibrate example program to get the values for
+  // // your compass.
+  // // M min X: -644 Y: 49 Z: 1655 M max X: -27 Y: 820 Z: 1772
 
-  // RAMBLER Uno
-  //compass_.m_min.x = -444; compass_.m_min.y = 282; compass_.m_min.z = 1286;
-  //compass_.m_max.x = -135; compass_.m_max.y = 670; compass_.m_max.z = 1568;
+  // // RAMBLER Uno
+  // //compass_.m_min.x = -444; compass_.m_min.y = 282; compass_.m_min.z = 1286;
+  // //compass_.m_max.x = -135; compass_.m_max.y = 670; compass_.m_max.z = 1568;
   
-  // RAMBLER Leonardo
-  compass_.m_min.x = 662; compass_.m_min.y = 241; compass_.m_min.z = 1509;
-  compass_.m_max.x = 1024; compass_.m_max.y = 753; compass_.m_max.z = 1726;
+  // // RAMBLER Leonardo
+  // compass_.m_min.x = 662; compass_.m_min.y = 241; compass_.m_min.z = 1509;
+  // compass_.m_max.x = 1024; compass_.m_max.y = 753; compass_.m_max.z = 1726;
   
   // Seed random generator
   randomSeed(analogRead(2)); // Analog 2 is unused, so take a reading
@@ -47,9 +56,9 @@ void RAMBLERBot::setAccel(int maxAccel)
 // FAST LOOP: 50 Hz-ish
 void RAMBLERBot::loop50Hz()
 {
-  compass_.read();
-  heading_ = compass_.heading((LSM303::vector){0,-1,0})-180;
-  headingAvg_.Push(heading_);
+  // compass_.read();
+  // heading_ = compass_.heading((LSM303::vector){0,-1,0})-180;
+  // headingAvg_.Push(heading_);
   
   // Check if the speed should accelerate or decelerate
   if (speedLimit(&motor_left_, motor_left_goal_))
@@ -69,10 +78,13 @@ void RAMBLERBot::loop50Hz()
 void RAMBLERBot::loop10Hz()
 {
   int v_fwd, angle, goal_dir;
-  float  ant_right, ant_left;
+  int ant_right, ant_left, ant_set;
+  int v_omg;
+  //float  ant_right, ant_left;
   
-  heading_curr_ = headingAvg_.AngleMean();
+  // heading_curr_ = headingAvg_.AngleMean();
   v_fwd = (motor_right_+motor_left_)/2;
+  v_omg = (motor_right_-motor_left_); // Say angular velocity is right-left
   //Serial.print("Velocity: ");
   //Serial.println(v_fwd);
     
@@ -159,6 +171,14 @@ void RAMBLERBot::loop10Hz()
       state_ = TEST_PIVOT;
     break;
     
+    case TEST_WALLFOLLOW:
+      whiskers_.ReadWhiskers();
+      whiskers_.GetWhiskerValues(&ant_right, &ant_left);
+      ant_set = 200; // TODO: Find antenna set point
+      v_omg = (ant_right-ant_set)*10;  //Perform wallfollowing control
+      v_fwd = 150 - fabs(v_omg);       // Scale v_fwd based on omega
+    break;
+    
     case TEST_PIVOT:
       if (index_ < 10)
       {
@@ -179,7 +199,7 @@ void RAMBLERBot::loop10Hz()
         }
       }
     break;
-    
+        
     case TEST_END:
       if (index_ < 5)
       {
