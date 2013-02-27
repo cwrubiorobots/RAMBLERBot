@@ -21,6 +21,8 @@ public:
   void Clear()
   {
     m_n = 0;
+    m_total = 0;
+    m_mean = 0;
     m_vals.clear();
   }
   /*
@@ -44,7 +46,6 @@ public:
     if (window > 0)
     {
       m_vals.clear();
-      m_n = 0;
       m_window = window;
     }
   }

@@ -16,6 +16,14 @@ int fabs(int val)
     return val;
 }
 
+// int min(int v1, int v2)
+// {
+  // if (v2 < v1)
+    // return v2;
+  // else
+    // return v1;
+// }
+
 RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
 {
   pinMode(LED_PIN, OUTPUT);
@@ -74,35 +82,42 @@ void RAMBLERBot::loop50Hz()
 
 }
 
+void RAMBLERBot::loop10HzOffset()
+{
+  // Maybe read the whisker in here or do other relevant operations??
+}
+
 // SLOW LOOP: 10 Hz-ish
 void RAMBLERBot::loop10Hz()
 {
   int v_fwd, angle, goal_dir;
   int ant_right, ant_left, ant_set;
   int v_omg;
-  //float  ant_right, ant_left;
   
-  // heading_curr_ = headingAvg_.AngleMean();
+  // Read the Antenna every loop
+  whiskers_.GetWhiskerValues(&ant_right, &ant_left);
+  ant_set = 50; // Constant antenna set point (for now)
+  
+  // Calculate velocities
   v_fwd = (motor_right_+motor_left_)/2;
   v_omg = (motor_right_-motor_left_); // Say angular velocity is right-left
-  //Serial.print("Velocity: ");
-  //Serial.println(v_fwd);
     
   // Check the Emergency Stop
   if (state_ != ESTOP && button_.isPressed())
   {
-    index_ = 0;
+    index_ = 0;                         // Reset state machine
     start_ = false;
-    state_ = ESTOP;
-    motors_.setRightSpeed(0);
+    state_ = ESTOP;  
+    motors_.setRightSpeed(0);           // Stop motors
     motors_.setLeftSpeed(0);
     motor_left_ = 0;
     motor_right_ = 0;
     motor_left_goal_ = 0;
     motor_right_goal_ = 0;
-    buzzer_.playNote(NOTE_G(5),100,15);
-    lights_.AllOff();
-    button_.waitForRelease();  // wait here for the button to be released
+    lights_.AllOff();                   // Turn off lights
+    whiskers_.ResetCalibration();       // Reset the whisker
+    buzzer_.playNote(NOTE_G(5),100,15); // Play a sound
+    button_.waitForRelease();           // wait here for the button to be released
   }
   
   // Progress through the overall Robot States
@@ -148,7 +163,7 @@ void RAMBLERBot::loop10Hz()
       else
       {
         index_ = 0;
-        state_ = COCKROACH;
+        state_ = TEST_WALLFOLLOW;
       }
     break;
       
@@ -172,11 +187,24 @@ void RAMBLERBot::loop10Hz()
     break;
     
     case TEST_WALLFOLLOW:
-      whiskers_.ReadWhiskers();
-      whiskers_.GetWhiskerValues(&ant_right, &ant_left);
-      ant_set = 200; // TODO: Find antenna set point
-      v_omg = (ant_right-ant_set)*10;  //Perform wallfollowing control
-      v_fwd = 150 - fabs(v_omg);       // Scale v_fwd based on omega
+      
+      // // WallFollow!
+      ant_set = 50; // TODO: Find antenna set point
+      v_omg = 1*(ant_set-ant_right)*2;  //Perform wallfollowing control
+      v_omg = max(min(v_omg,100),-100);
+      v_fwd = max(250 - fabs(v_omg), 100);       // Scale v_fwd based on omega
+      motor_right_goal_ = v_fwd + v_omg/2;
+      motor_left_goal_ = v_fwd - v_omg/2;
+      
+      Serial.print("Left: ");
+      Serial.print(ant_left);
+      Serial.print("Right: ");
+      Serial.print(ant_right);
+      Serial.print("RightMotor: ");
+      Serial.print(motor_right_goal_);
+      Serial.print("LeftMotor: ");
+      Serial.println(motor_left_goal_);
+      
     break;
     
     case TEST_PIVOT:

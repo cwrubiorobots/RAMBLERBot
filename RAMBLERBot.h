@@ -32,6 +32,10 @@ class RAMBLERBot
     // 10 Hz Loop
     void loop10Hz();
     
+    // 10 Hz Loop Offset from the Main Loop
+    // Could do sensor reading in here if necessary?? I dont know
+    void loop10HzOffset();
+    
     void setAccel(int maxAccel);
     
     // Variable returning functions
