@@ -13,6 +13,7 @@ David Chrzanowski
 #include <Wire.h>
 #include <LSM303.h>
 #include <AngleUtilities.h>
+#include <EEPROM.h>
 
 RAMBLERBot robot;
 

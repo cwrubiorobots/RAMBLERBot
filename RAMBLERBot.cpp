@@ -1,6 +1,13 @@
 #include "RAMBLERBot.h"
+#include <EEPROM.h>
+#include "MersenneTwister.h"
 
 #define LED_PIN 13
+
+#define USE_NEW_SEED 1
+#define USE_MERSENNE 0
+#define SEED_ADDR_HIGH 0
+#define SEED_ADDR_LOW 1
 
 // TODO:
 // - Dependent on time step
@@ -16,13 +23,37 @@ int fabs(int val)
     return val;
 }
 
-// int min(int v1, int v2)
-// {
-  // if (v2 < v1)
-    // return v2;
-  // else
-    // return v1;
-// }
+void SeedRandomGenerator()
+{
+  // SEED RANDOM GENERATOR
+  
+  // Read EEPROM
+  byte oldSeedHigh = EEPROM.read(SEED_ADDR_HIGH);// << 8 + EEPROM.read(SEED_ADDR_LOW);
+  byte oldSeedLow = EEPROM.read(SEED_ADDR_LOW);
+  int seed = (oldSeedHigh << 8) + oldSeedLow;
+  
+  // Increment new seed or use the old one??
+  if (USE_NEW_SEED)
+    seed +=1;
+  
+  // Seed
+  //init_genrand(static_cast<unsigned long>(seed));
+  randomSeed(seed);
+  Serial.print("Random Seed: ");
+  Serial.println(seed);
+  
+  // Write back into EEPROM
+  oldSeedHigh = seed >> 8;
+  oldSeedLow = seed;
+  EEPROM.write(SEED_ADDR_LOW, oldSeedLow);
+  EEPROM.write(SEED_ADDR_HIGH, oldSeedHigh);
+}
+
+int GetRandomValue()
+{
+  //double r = genrand_real1();
+  return random(1001);//int(genrand_real1()*1000);
+}
 
 RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
 {
@@ -52,9 +83,9 @@ void RAMBLERBot::init()
   // compass_.m_min.x = 662; compass_.m_min.y = 241; compass_.m_min.z = 1509;
   // compass_.m_max.x = 1024; compass_.m_max.y = 753; compass_.m_max.z = 1726;
   
-  // Seed random generator
-  randomSeed(analogRead(2)); // Analog 2 is unused, so take a reading
+  //SeedRandomGenerator();
 }
+
 
 void RAMBLERBot::setAccel(int maxAccel)
 {
@@ -133,9 +164,11 @@ void RAMBLERBot::loop10Hz()
       motor_right_goal_ = 0;
       if (button_.isPressed())
       {
+        // Prepare for the robot to run!!!
         index_ = 0;
-        lights_.TurnOffLED2();
-        state_ = ESTOP_TO_ACTIVE;
+        lights_.TurnOffLED2();     // Turn off lights
+        state_ = ESTOP_TO_ACTIVE;  // Next State
+        SeedRandomGenerator();     // Seed generator
         button_.waitForRelease();  // wait here for the button to be released
       }
       break;
@@ -156,6 +189,7 @@ void RAMBLERBot::loop10Hz()
       break;
     
     case PAUSE:
+      Serial.println(GetRandomValue());
       if (index_ < 10)
       {
         index_++;
