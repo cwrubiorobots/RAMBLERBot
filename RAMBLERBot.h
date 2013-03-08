@@ -64,7 +64,11 @@ class RAMBLERBot
     int heading_start_;
     MovingAverage headingAvg_;
     int index_;
+    int count50Hz_;
     bool start_;
+    int rand1_;
+    int rand2_;
+    unsigned long time_;
     
     // Member variables
     float v_;
@@ -74,6 +78,8 @@ class RAMBLERBot
     int motor_right_;
     int motor_left_goal_;
     int motor_right_goal_;
+    int ant_right_;
+    int ant_left_;
   
     enum rambler_state_t {
       ESTOP = 0,

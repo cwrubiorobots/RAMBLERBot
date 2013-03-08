@@ -1,11 +1,9 @@
 #include "RAMBLERBot.h"
 #include <EEPROM.h>
-#include "MersenneTwister.h"
 
 #define LED_PIN 13
 
 #define USE_NEW_SEED 1
-#define USE_MERSENNE 0
 #define SEED_ADDR_HIGH 0
 #define SEED_ADDR_LOW 1
 
@@ -52,7 +50,8 @@ void SeedRandomGenerator()
 int GetRandomValue()
 {
   //double r = genrand_real1();
-  return random(1001);//int(genrand_real1()*1000);
+  //return int(genrand_real1()*1000);
+  return random(1000);
 }
 
 RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
@@ -67,21 +66,8 @@ RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
 
 void RAMBLERBot::init()
 {
-  // Wire.begin();
-  // compass_.init();
-  // compass_.enableDefault();
-  
-  // // Calibration values. Use the Calibrate example program to get the values for
-  // // your compass.
-  // // M min X: -644 Y: 49 Z: 1655 M max X: -27 Y: 820 Z: 1772
-
-  // // RAMBLER Uno
-  // //compass_.m_min.x = -444; compass_.m_min.y = 282; compass_.m_min.z = 1286;
-  // //compass_.m_max.x = -135; compass_.m_max.y = 670; compass_.m_max.z = 1568;
-  
-  // // RAMBLER Leonardo
-  // compass_.m_min.x = 662; compass_.m_min.y = 241; compass_.m_min.z = 1509;
-  // compass_.m_max.x = 1024; compass_.m_max.y = 753; compass_.m_max.z = 1726;
+  // Initialize compass if using it
+  // (I'm not using a compass)
   
   //SeedRandomGenerator();
 }
@@ -94,11 +80,7 @@ void RAMBLERBot::setAccel(int maxAccel)
 
 // FAST LOOP: 50 Hz-ish
 void RAMBLERBot::loop50Hz()
-{
-  // compass_.read();
-  // heading_ = compass_.heading((LSM303::vector){0,-1,0})-180;
-  // headingAvg_.Push(heading_);
-  
+{  
   // Check if the speed should accelerate or decelerate
   if (speedLimit(&motor_left_, motor_left_goal_))
   {
@@ -110,6 +92,31 @@ void RAMBLERBot::loop50Hz()
   {
     motors_.setRightSpeed(motor_right_);
   }
+  
+  
+  // Reset 50 Hz Count if necessary
+  if (++count50Hz_ >= 5)
+  {
+    count50Hz_ = 0;
+  }
+  
+  // Perform Operations on the 50 Hz time
+  if (count50Hz_ == 1)
+  {
+    rand1_ = GetRandomValue();
+  }
+  if (count50Hz_ == 2)
+  {
+    rand2_ = GetRandomValue();
+  }
+  if (count50Hz_ == 3)
+  {
+  }
+  if (count50Hz_ == 4)
+  {
+    whiskers_.GetWhiskerValues(&ant_right_, &ant_left_);
+  }
+  
 
 }
 
@@ -126,7 +133,7 @@ void RAMBLERBot::loop10Hz()
   int v_omg;
   
   // Read the Antenna every loop
-  whiskers_.GetWhiskerValues(&ant_right, &ant_left);
+  //whiskers_.GetWhiskerValues(&ant_right, &ant_left);
   ant_set = 50; // Constant antenna set point (for now)
   
   // Calculate velocities
@@ -197,7 +204,7 @@ void RAMBLERBot::loop10Hz()
       else
       {
         index_ = 0;
-        state_ = TEST_WALLFOLLOW;
+        state_ = COCKROACH;
       }
     break;
       
@@ -207,9 +214,7 @@ void RAMBLERBot::loop10Hz()
       //        makes the robot run approx 3 bodylen/s
       angle = 0;
       goal_dir = 0;
-      ant_left = 0;
-      ant_right = 0;
-      brain.ProcessInput(random(1001),random(1001),v_fwd,angle,ant_right,ant_left,goal_dir);
+      brain.ProcessInput(rand1_,rand2_,v_fwd,angle,ant_right_,ant_left_,goal_dir);
       brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
       lights_.DisplayChar(brain.getLights());
     break;

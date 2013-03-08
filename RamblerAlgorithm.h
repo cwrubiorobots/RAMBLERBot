@@ -28,7 +28,11 @@ class RamblerAlgorithm
     // Enum for tracking the cockroach state
     enum RamblerState {
       STRAIGHT = 0,
-      PIVOT
+      PIVOT,
+      WALL_FOLLOW,
+      WALL_DEPART,
+      WALL_TURN,
+      LOST_WALL
     };
     
     // algorithm_state_t Process(..)
@@ -41,13 +45,13 @@ class RamblerAlgorithm
     //    - int goal_dir: Direction to goal
     // Returns:
     //    - algorithm_state_t: New robot state
-    RamblerState ProcessInput(int rand1, int rand2, int v_fwd, int angle, float ant_rgt, float ant_lft, int goal_dir);
+    RamblerState ProcessInput(int rand1, int rand2, int v_fwd, int angle, int ant_rgt, int ant_lft, int goal_dir);
     
     // void GetVelocity(float *v, float *w)
     // Populates the desired robot velocities, v and w
     //   - float *v: Populated with desired velocity
     //   - float *w: Populated with desired angular velocity
-    void GetVelocity(int *v1, int *v2);
+    void GetVelocity(int *vleft, int *vright);
     
     // void SetState(algorithm_state_t)
     // Sets the robot state... could be good for debugging purposes. 
@@ -73,8 +77,18 @@ class RamblerAlgorithm
     float left_motor_;
     float right_motor_;
     int pivot_dir_;
+    int wall_dir_;
     int pivot_rate_;
-    char pivot_count_;
+    char loop_count_;
+    bool wall_following_;
+    
+    char light_count_;
+    
+    // Antenna Control Variables
+    int ant_set_;
+    int ant_P_;
+    int ant_left_;
+    int ant_right_;
     
   
 };

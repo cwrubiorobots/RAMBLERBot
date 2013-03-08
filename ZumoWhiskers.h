@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include <MovingAverage.h>
 
-#define WHISKER_RIGHT A2
-#define WHISKER_LEFT A3
+#define WHISKER_RIGHT A3
+#define WHISKER_LEFT A2
 
 // WHISKER_LOWPASS_NUM:
 // Constant that determines how many iterations to low-pass the 
