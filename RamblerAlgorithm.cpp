@@ -142,22 +142,18 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       }
       else
       {
-      // Check for CORNER:
-      // if ((wall_dir_ == 1 && ant_rgt > 0) || (wall_dir_ == -1 && ant_lft > 0))
-      // {
-        // // Transition to WALL_TURN about 20% of the time
-        // // Transition to CORNER_TURN about 80% of the time
-        // if (rand1 < 200)
-          // state_ = RamblerAlgorithm::WALL_TURN;
-        // else
-          // state_ = RamblerAlgorithm::CORNER_TURN;
-        // break;
-      // }
+        // Check for CORNER:
+        if ((wall_dir_ == 1 && ant_rgt > 0) || (wall_dir_ == -1 && ant_lft > 0))
+        {
+          wall_following_ = false;
+          state_ = RamblerAlgorithm::CORNER;
+        }
       }
       
       // Check for Lost Wall:
       if ( (wall_dir_ == 1 && ant_lft <= 0) || (wall_dir_ == -1 && ant_rgt <= 0))
       {
+        wall_following_ = false;
         state_ = RamblerAlgorithm::LOST_WALL;
         break;
       }
@@ -167,6 +163,7 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       exit_rate = .155; // Todo: Set based on shelter direction
       if (rand1 < v_fwd_norm * exit_rate / RAMBLER_HZ * 1000)
       {
+        wall_following_ = false;
         state_ = RamblerAlgorithm::WALL_DEPART;
         break;
       }
@@ -176,6 +173,7 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       exit_rate = .032; // Set based on shelter direction
       if (rand2 < v_fwd_norm * exit_rate / RAMBLER_HZ * 1000)
       {
+        wall_following_ = false;
         state_ = RamblerAlgorithm::WALL_TURN;
         break;
       }
@@ -286,6 +284,24 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       }
     break;
     
+    //CORNER
+    //  Transitions:
+    //  1. After turning, decide whether to continue or turnaround
+    case RamblerAlgorithm::CORNER:      
+      // Run through a set number of iterations
+      if (loop_count_ > 10)
+      {
+        loop_count_ = 0;
+        // Transition to Turnaround 20%, Wallfollow 80%
+        if (rand1 < 200)
+          state_ = RamblerAlgorithm::WALL_TURN;
+        else
+          state_ = RamblerAlgorithm::WALL_FOLLOW;
+        break;
+      }
+      loop_count_++;
+    break;
+    
     default:
       state_ = STRAIGHT;
     break;
@@ -382,6 +398,17 @@ void RamblerAlgorithm::GetVelocity(int *vleft, int *vright)
       v_ = 0;
       w_ = (right_motor_ - left_motor_)/0.1;
     break;
+    
+    //CORNER
+    //  Action:
+    //    - Set w = something and v = 0 
+    case RamblerAlgorithm::CORNER:
+      // Wall Turn turns away from the wall
+      left_motor_ = wall_dir_ * 100; //200
+      right_motor_ = -1 * wall_dir_ * 100; //200
+      v_ = 0;
+      w_ = (right_motor_ - left_motor_)/0.1;
+    break;
   }
   
   *vright = right_motor_;
@@ -456,6 +483,18 @@ unsigned char RamblerAlgorithm::getLights()
     //    - Both Left and Right Lights
     case RamblerAlgorithm::WALL_TURN:
       return 5;
+    break;
+    
+    //CORNER
+    //  Lights:
+    //    - Both Left and Right Lights Blinking
+    case RamblerAlgorithm::CORNER:
+      if (++light_count_ > 1)
+        light_count_ = 0;
+      if (light_count_ > 0)
+        return 5;
+      else
+        return 0;
     break;
     
     default:

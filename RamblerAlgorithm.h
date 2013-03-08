@@ -32,7 +32,8 @@ class RamblerAlgorithm
       WALL_FOLLOW,
       WALL_DEPART,
       WALL_TURN,
-      LOST_WALL
+      LOST_WALL,
+      CORNER
     };
     
     // algorithm_state_t Process(..)
