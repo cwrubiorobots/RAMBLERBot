@@ -33,7 +33,8 @@ class RamblerAlgorithm
       WALL_DEPART,
       WALL_TURN,
       LOST_WALL,
-      CORNER
+      CORNER,
+      TO_GOAL
     };
     
     // algorithm_state_t Process(..)
@@ -46,7 +47,7 @@ class RamblerAlgorithm
     //    - int goal_dir: Direction to goal
     // Returns:
     //    - algorithm_state_t: New robot state
-    RamblerState ProcessInput(int rand1, int rand2, int v_fwd, int angle, int ant_rgt, int ant_lft, int goal_dir);
+    RamblerState ProcessInput(int rand1, int rand2, int rand3, int v_fwd, int angle, int ant_rgt, int ant_lft, int goal_dir);
     
     // void GetVelocity(float *v, float *w)
     // Populates the desired robot velocities, v and w

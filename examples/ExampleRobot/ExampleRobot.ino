@@ -1,5 +1,5 @@
 /*
-Rambler Cockroach Robot
+Rambler Cockroach Robot: EMAE 477
 
 EJ Kreinar
 Charles Hart
@@ -10,6 +10,7 @@ David Chrzanowski
 #include <ZumoMotors.h>
 #include <ZumoBuzzer.h>
 #include <Pushbutton.h>
+#include <RamblerSerial.h>
 #include <Wire.h>
 #include <LSM303.h>
 #include <AngleUtilities.h>
@@ -47,14 +48,14 @@ void loop()
       oldLoopTime = newTime; 
       robot.loop10Hz();
       
-      Serial.print(" Time Elapsed: ");
-      Serial.print(duration);    
-      Serial.print(" Left Motor: ");
-      Serial.print(robot.getMotorLeft());
-      Serial.print(" Right Motor: ");
-      Serial.print(robot.getMotorRight());
-      Serial.print(" CockState: ");
-      Serial.println(robot.getCockroachState());
+      //Serial.print(" Time Elapsed: ");
+      //Serial.print(duration);    
+      //Serial.print(" Left Motor: ");
+      //Serial.print(robot.getMotorLeft());
+      //Serial.print(" Right Motor: ");
+      //Serial.print(robot.getMotorRight());
+      //Serial.print(" CockState: ");
+      //Serial.println(robot.getCockroachState());
     }
   }  
 }

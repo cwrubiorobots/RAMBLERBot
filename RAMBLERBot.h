@@ -12,6 +12,7 @@
 #include <LSM303.h>
 #include <ZumoLights.h>
 #include <ZumoWhiskers.h>
+#include <RamblerSerialRcv.h>
 #include <RamblerAlgorithm.h>
 
 // RAMBLERBot:
@@ -56,6 +57,7 @@ class RAMBLERBot
     ZumoLights lights_;
     Pushbutton button_;
     ZumoWhiskers whiskers_;
+    RamblerSerialRcv receiver_;
     // LSM303 compass_;
     
     // Helper classes and variables
@@ -68,6 +70,7 @@ class RAMBLERBot
     bool start_;
     int rand1_;
     int rand2_;
+    int rand3_;
     unsigned long time_;
     
     // Member variables

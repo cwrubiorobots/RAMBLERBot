@@ -7,12 +7,6 @@
 #define SEED_ADDR_HIGH 0
 #define SEED_ADDR_LOW 1
 
-// TODO:
-// - Dependent on time step
-// - ??
-
-// constructor
-
 int fabs(int val)
 {
   if (val < 0)
@@ -37,8 +31,8 @@ void SeedRandomGenerator()
   // Seed
   //init_genrand(static_cast<unsigned long>(seed));
   randomSeed(seed);
-  Serial.print("Random Seed: ");
-  Serial.println(seed);
+  //Serial.print("Random Seed: ");
+  //Serial.println(seed);
   
   // Write back into EEPROM
   oldSeedHigh = seed >> 8;
@@ -54,6 +48,7 @@ int GetRandomValue()
   return random(1000);
 }
 
+// constructor
 RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
 {
   pinMode(LED_PIN, OUTPUT);
@@ -93,7 +88,6 @@ void RAMBLERBot::loop50Hz()
     motors_.setRightSpeed(motor_right_);
   }
   
-  
   // Reset 50 Hz Count if necessary
   if (++count50Hz_ >= 5)
   {
@@ -111,13 +105,12 @@ void RAMBLERBot::loop50Hz()
   }
   if (count50Hz_ == 3)
   {
+    rand3_ = GetRandomValue();
   }
   if (count50Hz_ == 4)
   {
     whiskers_.GetWhiskerValues(&ant_right_, &ant_left_);
   }
-  
-
 }
 
 void RAMBLERBot::loop10HzOffset()
@@ -139,6 +132,10 @@ void RAMBLERBot::loop10Hz()
   // Calculate velocities
   v_fwd = (motor_right_+motor_left_)/2;
   v_omg = (motor_right_-motor_left_); // Say angular velocity is right-left
+  
+  // Parse any serial data received from the Raspberry Pi
+  receiver_.ParseSerial();
+  goal_dir = receiver_.getGoalDir(); // Set the goal direction
     
   // Check the Emergency Stop
   if (state_ != ESTOP && button_.isPressed())
@@ -196,7 +193,6 @@ void RAMBLERBot::loop10Hz()
       break;
     
     case PAUSE:
-      Serial.println(GetRandomValue());
       if (index_ < 10)
       {
         index_++;
@@ -213,8 +209,8 @@ void RAMBLERBot::loop10Hz()
       //  -> Calibrated: At full battery charge, motor_left_ and motor_right_ = 250 
       //        makes the robot run approx 3 bodylen/s
       angle = 0;
-      goal_dir = 0;
-      brain.ProcessInput(rand1_,rand2_,v_fwd,angle,ant_right_,ant_left_,goal_dir);
+      goal_dir = 180;
+      brain.ProcessInput(rand1_,rand2_,rand3_,v_fwd,angle,ant_right_,ant_left_,goal_dir);
       brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
       lights_.DisplayChar(brain.getLights());
     break;
@@ -235,14 +231,14 @@ void RAMBLERBot::loop10Hz()
       motor_right_goal_ = v_fwd + v_omg/2;
       motor_left_goal_ = v_fwd - v_omg/2;
       
-      Serial.print("Left: ");
-      Serial.print(ant_left);
-      Serial.print("Right: ");
-      Serial.print(ant_right);
-      Serial.print("RightMotor: ");
-      Serial.print(motor_right_goal_);
-      Serial.print("LeftMotor: ");
-      Serial.println(motor_left_goal_);
+      //Serial.print("Left: ");
+      //Serial.print(ant_left);
+      //Serial.print("Right: ");
+      //Serial.print(ant_right);
+      //Serial.print("RightMotor: ");
+      //Serial.print(motor_right_goal_);
+      //Serial.print("LeftMotor: ");
+      //Serial.println(motor_left_goal_);
       
     break;
     
@@ -256,9 +252,8 @@ void RAMBLERBot::loop10Hz()
       }
       else
       {
-        brain.ProcessInput(random(1001),random(1001),v_fwd,0,0.0,0.0,0);
+        brain.ProcessInput(rand1_,rand2_,rand3_,v_fwd,0,0.0,0.0,0);
         brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
-        Serial.println("2");
         if (brain.getState() == RamblerAlgorithm::STRAIGHT)
         {
           index_ = 0;

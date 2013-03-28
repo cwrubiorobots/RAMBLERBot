@@ -5,6 +5,11 @@ int RangeLimit(int in, int min_in, int max_in)
   return max(min(in,max_in),min_in);
 }
 
+template <typename type>
+type sign(type value) { 
+  return type((value>0)-(value<0)); 
+}
+
 RamblerAlgorithm::RamblerAlgorithm()
 {
   state_ = RamblerAlgorithm::STRAIGHT;
@@ -29,7 +34,7 @@ RamblerAlgorithm::RamblerAlgorithm()
 }
 
 RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
-                    int rand1, int rand2,
+                    int rand1, int rand2, int rand3,
                     int v_fwd,
                     int angle,
                     int ant_rgt,
@@ -42,7 +47,8 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
   // v_fwd varies from 0-250 where 250 is approximately 3 bodylengths per second
   float v_fwd_norm = v_fwd / 100;  // Now v_fwd_norm is in units: bodylen/s
   float exit_rate;
-  int compare;  
+  int compare;
+  int dir_ratio;
   
   // Store Antenna Values
   ant_right_ = ant_rgt;
@@ -72,20 +78,27 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       }
       
       // Check for Goal Exit
-      if (false)
+      if (fabs(goal_dir) < 20 && rand3 < 120)
       {
-        //state_ = RamblerAlgorithm::TO_GOAL;
+        state_ = RamblerAlgorithm::TO_GOAL;
         break;
       }
       
       // Check for pivot transition: 
       // Pivot rate: (fwd velocity) * (pivot const) * (dt)
       exit_rate = .575;
+      if (fabs(goal_dir) < 10) // Lower the pivot rate if the goal is within 10 degrees
+        exit_rate = 0.285;
       if (rand1 < v_fwd_norm * exit_rate / RAMBLER_HZ * 1000)
       {
         state_ = RamblerAlgorithm::PIVOT;
         // Continue Direction Ratio
-        if (rand2 < 666)
+        dir_ratio = 0.66;
+        if (fabs(goal_dir) < 33)   // Check if the goal is with 30 degrees
+          dir_ratio = 0.51;        // If so, lower the continue direction ratio
+        if (sign(goal_dir) * pivot_dir_ == 1) // Check if the previous pivot direction is towards shelter
+          dir_ratio = dir_ratio + 0.15;       // If so, increase the continue direction ratio by 15% (approximate metric)
+        if (rand2 > dir_ratio * 1000)
         {
           pivot_dir_ = -1 * pivot_dir_;
         }
@@ -160,7 +173,24 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       
       // Check for Depart Wall:
       // Departure rate: (fwd velocity) * (departure const) * (dt)
-      exit_rate = .155; // Todo: Set based on shelter direction
+      exit_rate = 0.155;
+      if (sign(goal_dir) * wall_dir_ == 1) // The shelter is behind the wall
+      {
+        if (fabs(goal_dir) < 112)
+          exit_rate = 0.045;
+        else
+          exit_rate = 0.11;
+      }
+      else // The shelter is NOT behind the wall
+      {
+        if (fabs(goal_dir) < 45)
+          exit_rate = 0.085;
+        else if (fabs(goal_dir) < 90)
+          exit_rate = 0.070;
+        else if (fabs(goal_dir) < 135)
+          exit_rate = 0.070;
+        // Otherwise, use the default exit rate of 0.155          
+      }
       if (rand1 < v_fwd_norm * exit_rate / RAMBLER_HZ * 1000)
       {
         wall_following_ = false;
@@ -302,6 +332,25 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       loop_count_++;
     break;
     
+    //TO GOAL
+    //  Transitions:
+    //  1. When the antenna touches
+    case RamblerAlgorithm::TO_GOAL:
+      // Check for wall:
+      if (ant_rgt > 0 || ant_lft > 0)//wall_detected)
+      {
+        // Set the state to the wallfollow
+        wall_following_ = false;
+        state_ = RamblerAlgorithm::WALL_FOLLOW;
+        // Determine the wall direction
+        if (ant_rgt > ant_lft)
+          wall_dir_ = -1;  // Wall is to the right
+        else
+          wall_dir_ = 1;   // Wall is to the left
+        break;
+      }
+    break;
+    
     default:
       state_ = STRAIGHT;
     break;
@@ -409,6 +458,16 @@ void RamblerAlgorithm::GetVelocity(int *vleft, int *vright)
       v_ = 0;
       w_ = (right_motor_ - left_motor_)/0.1;
     break;
+    
+    //TO_GOAL
+    //  Action:
+    //    - Set v = 6 bodylen/s and w = 0
+    case RamblerAlgorithm::TO_GOAL:
+      left_motor_ = 400;
+      right_motor_ = 400;
+      v_ = (left_motor_ + right_motor_)/2;
+      w_ = 0;
+    break;
   }
   
   *vright = right_motor_;
@@ -493,6 +552,18 @@ unsigned char RamblerAlgorithm::getLights()
         light_count_ = 0;
       if (light_count_ > 0)
         return 5;
+      else
+        return 0;
+    break;
+        
+    //TO_GOAL
+    //  Lights:
+    //    - Middle Light Blinking
+    case RamblerAlgorithm::TO_GOAL:
+      if (++light_count_ > 1)
+        light_count_ = 0;
+      if (light_count_ > 0)
+        return 2;
       else
         return 0;
     break;
