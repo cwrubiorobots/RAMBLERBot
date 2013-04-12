@@ -121,7 +121,7 @@ void RAMBLERBot::loop10HzOffset()
 // SLOW LOOP: 10 Hz-ish
 void RAMBLERBot::loop10Hz()
 {
-  int v_fwd, angle, goal_dir;
+  int v_fwd, heading, goal_dir;
   int ant_right, ant_left, ant_set;
   int v_omg;
   
@@ -208,11 +208,29 @@ void RAMBLERBot::loop10Hz()
       // Todo: Calibrate Velocity!!
       //  -> Calibrated: At full battery charge, motor_left_ and motor_right_ = 250 
       //        makes the robot run approx 3 bodylen/s
-      angle = 0;
-      goal_dir = 180;
-      brain.ProcessInput(rand1_,rand2_,rand3_,v_fwd,angle,ant_right_,ant_left_,goal_dir);
+      heading = 0; // Currently no heading feedback
+      //goal_dir = 1000;
+      brain.ProcessInput(rand1_,rand2_,rand3_,v_fwd,heading,ant_right_,ant_left_,goal_dir);
       brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
       lights_.DisplayChar(brain.getLights());
+      
+      // Calc new velocity
+      v_fwd = (motor_right_+motor_left_)/2;
+      v_omg = (motor_right_-motor_left_);
+      
+      // Send logging
+      Serial.print((int)brain.getState());
+      Serial.print(",");
+      Serial.print(v_fwd);
+      Serial.print(",");
+      Serial.print(v_omg);
+      Serial.print(",");
+      Serial.print(ant_right_);
+      Serial.print(",");
+      Serial.print(ant_left_);
+      Serial.print(",");
+      Serial.print(goal_dir);
+      Serial.println("");
     break;
       
     case TEST_FORWARD:

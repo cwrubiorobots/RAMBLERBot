@@ -3,7 +3,7 @@
 RamblerSerialRcv::RamblerSerialRcv()
 {
   state_ = HEADER;
-  goal_tht_ = 180; // default goal direction is straight reverse
+  goal_tht_ = 1000; // default goal direction is straight reverse
   at_goal_ = 0;    // default to NOT at the goal
   
   msg_header = 250;
@@ -12,26 +12,36 @@ RamblerSerialRcv::RamblerSerialRcv()
   Serial1.begin(9600);
   Serial.begin(9600);
   #endif
+  
+  parse_count_ = 0;
 }
 
 void RamblerSerialRcv::ParseSerial()
 {
+  // parse_count_ tracks the # of times that ParseSerial has been called
+  // If ParseSerial is called 20 times (2 seconds) without finding a new message, 
+  // then revert to the default goal_tht_
+  if (parse_count_++ >= 20)
+  {
+    goal_tht_ = 1000;
+    parse_count_ = 0;
+  }
+  
+  #if LEONARDO
   while (Serial1.available() > 0)
   {
-  #if LEONARDO
     ParseByte(Serial1.read());
-  #else
-    ParseByte(Serial.read());
-  #endif
   }
+  #else
+  while (Serial.available() > 0)
+  {
+    ParseByte(Serial.read());
+  }
+  #endif
 }
 
 void RamblerSerialRcv::ParseByte(signed char a)
 {
-  #if LEONARDO
-  Serial.print("Byte: ");
-  Serial.println(a);
-  #endif
   switch (state_)
   {
     // HEADER
@@ -41,15 +51,9 @@ void RamblerSerialRcv::ParseByte(signed char a)
       if ((unsigned char)a == msg_header)
       {
         state_ = MSG_TYPE;
-        #if LEONARDO
-        Serial.println("Header Received");
-        #endif
       }
       else
       {
-        #if LEONARDO
-        Serial.println("Header FAILED");
-        #endif
       }
       break;
   
@@ -63,18 +67,11 @@ void RamblerSerialRcv::ParseByte(signed char a)
         state_ = MSG;
         type_  = GOAL_THT;
         msg_count_ = 0;
-        #if LEONARDO
-        Serial.print("Message received: ");
-        Serial.println(a);
-        #endif
       }
       else
       {
         // State is not recognized
         state_ = MSG_TYPE;
-        #if LEONARDO
-        Serial.println("Message NOT RECOGNIZED");
-        #endif
       }
       break;
     
@@ -88,20 +85,13 @@ void RamblerSerialRcv::ParseByte(signed char a)
         {
           goal_tht_ = 2*a; // Goal angle is twice the received value 
           msg_count_++;
-          #if LEONARDO
-          Serial.print("Goal Tht: ");
-          Serial.println(goal_tht_);
-          #endif
+          parse_count_ = 0;
         }
         else if (msg_count_ == 1)
         {
           at_goal_   = a; // "0" if not at the goal, "1" if at the goal
           msg_count_ = 0;
           state_     = HEADER;
-          #if LEONARDO
-          Serial.print("At Goal: ");
-          Serial.println(at_goal_);
-          #endif
         }
       }
       break;

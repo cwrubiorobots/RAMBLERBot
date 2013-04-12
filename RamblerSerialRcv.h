@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#define LEONARDO 1
+#define LEONARDO 0
 
 // Zumo Serial initializes and handles the RAMBLER serial
 // communication to the raspberry pi
@@ -42,6 +42,8 @@ class RamblerSerialRcv
     
     int msg_count_;
     MsgType type_;
+    
+    int parse_count_;
     
     unsigned char msg_header;
 };

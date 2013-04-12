@@ -94,13 +94,16 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
         state_ = RamblerAlgorithm::PIVOT;
         // Continue Direction Ratio
         dir_ratio = 0.66;
-        if (fabs(goal_dir) < 33)   // Check if the goal is with 30 degrees
-          dir_ratio = 0.51;        // If so, lower the continue direction ratio
-        if (sign(goal_dir) * pivot_dir_ == 1) // Check if the previous pivot direction is towards shelter
-          dir_ratio = dir_ratio + 0.15;       // If so, increase the continue direction ratio by 15% (approximate metric)
-        if (rand2 > dir_ratio * 1000)
+        if (fabs(goal_dir) <= 180) // Is goal detected?
         {
-          pivot_dir_ = -1 * pivot_dir_;
+          if (fabs(goal_dir) < 33)   // Check if the goal is with 30 degrees
+            dir_ratio = 0.51;        // If so, lower the continue direction ratio
+          if (sign(goal_dir) * pivot_dir_ == 1) // Check if the previous pivot direction is towards shelter
+            dir_ratio = dir_ratio + 0.15;       // If so, increase the continue direction ratio by 15% (approximate metric)
+          if (rand2 > dir_ratio * 1000)
+          {
+            pivot_dir_ = -1 * pivot_dir_;
+          }
         }
       }
     break;
@@ -174,22 +177,25 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       // Check for Depart Wall:
       // Departure rate: (fwd velocity) * (departure const) * (dt)
       exit_rate = 0.155;
-      if (sign(goal_dir) * wall_dir_ == 1) // The shelter is behind the wall
+      if (fabs(goal_dir) <= 180) // Is goal detected?
       {
-        if (fabs(goal_dir) < 112)
-          exit_rate = 0.045;
-        else
-          exit_rate = 0.11;
-      }
-      else // The shelter is NOT behind the wall
-      {
-        if (fabs(goal_dir) < 45)
-          exit_rate = 0.085;
-        else if (fabs(goal_dir) < 90)
-          exit_rate = 0.070;
-        else if (fabs(goal_dir) < 135)
-          exit_rate = 0.070;
-        // Otherwise, use the default exit rate of 0.155          
+        if (sign(goal_dir) * wall_dir_ == 1) // The shelter is behind the wall
+        {
+          if (fabs(goal_dir) < 112)
+            exit_rate = 0.045;
+          else
+            exit_rate = 0.11;
+        }
+        else // The shelter is NOT behind the wall
+        {
+          if (fabs(goal_dir) < 45)
+            exit_rate = 0.085;
+          else if (fabs(goal_dir) < 90)
+            exit_rate = 0.070;
+          else if (fabs(goal_dir) < 135)
+            exit_rate = 0.070;
+          // Otherwise, use the default exit rate of 0.155          
+        }
       }
       if (rand1 < v_fwd_norm * exit_rate / RAMBLER_HZ * 1000)
       {
