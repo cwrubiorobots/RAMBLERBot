@@ -231,6 +231,19 @@ void RAMBLERBot::loop10Hz()
       Serial.print(",");
       Serial.print(goal_dir);
       Serial.println("");
+      
+      Serial1.print((int)brain.getState());
+      Serial1.print(",");
+      Serial1.print(v_fwd);
+      Serial1.print(",");
+      Serial1.print(v_omg);
+      Serial1.print(",");
+      Serial1.print(ant_right_);
+      Serial1.print(",");
+      Serial1.print(ant_left_);
+      Serial1.print(",");
+      Serial1.print(goal_dir);
+      Serial1.println("");
     break;
       
     case TEST_FORWARD:

@@ -48,7 +48,7 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
   float v_fwd_norm = v_fwd / 100;  // Now v_fwd_norm is in units: bodylen/s
   float exit_rate;
   int compare;
-  int dir_ratio;
+  float dir_ratio;
   
   // Store Antenna Values
   ant_right_ = ant_rgt;
@@ -86,24 +86,24 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       
       // Check for pivot transition: 
       // Pivot rate: (fwd velocity) * (pivot const) * (dt)
-      exit_rate = .575;
-      if (fabs(goal_dir) < 10) // Lower the pivot rate if the goal is within 10 degrees
+      exit_rate = .600;//.575; // Increased to make the robot pivot more often... oops!
+      if (fabs(goal_dir) < 15) //10) // Lower the pivot rate if the goal is within 10 degrees
         exit_rate = 0.285;
       if (rand1 < v_fwd_norm * exit_rate / RAMBLER_HZ * 1000)
       {
         state_ = RamblerAlgorithm::PIVOT;
         // Continue Direction Ratio
         dir_ratio = 0.66;
-        if (fabs(goal_dir) <= 180) // Is goal detected?
+        if (fabs(goal_dir) <= 1) // Is goal detected?
         {
           if (fabs(goal_dir) < 33)   // Check if the goal is with 30 degrees
-            dir_ratio = 0.51;        // If so, lower the continue direction ratio
+            dir_ratio = 0.41;//0.51;        // If so, lower the continue direction ratio
           if (sign(goal_dir) * pivot_dir_ == 1) // Check if the previous pivot direction is towards shelter
-            dir_ratio = dir_ratio + 0.15;       // If so, increase the continue direction ratio by 15% (approximate metric)
-          if (rand2 > dir_ratio * 1000)
-          {
-            pivot_dir_ = -1 * pivot_dir_;
-          }
+            dir_ratio = dir_ratio + 0.2;//0.15;       // If so, increase the continue direction ratio by 15% (approximate metric)
+        }
+        if (rand2 > dir_ratio * 1000)
+        {
+          pivot_dir_ = -1 * pivot_dir_;
         }
       }
     break;
@@ -130,10 +130,14 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       
       // Pivot procedure approximates a cockroach-like pivoting PDF
       compare = 1000;
-      if (loop_count_ <= 3)
-        compare = 30*loop_count_*loop_count_;
+      // Other Options for constants: 
+      //   3, 30, 80:  Max around 3-5 timesteps
+      //   6, 20, 90:  Max around 4-5 timesteps
+      //   7, 15, 75:  Max around 5-6 timesteps
+      if (loop_count_ <= 6)
+        compare = 20*loop_count_*loop_count_;
       else
-        compare = 80*loop_count_;
+        compare = 90*loop_count_;
       if (rand1 < compare)
       {
         loop_count_ = 0;
@@ -181,7 +185,7 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
       {
         if (sign(goal_dir) * wall_dir_ == 1) // The shelter is behind the wall
         {
-          if (fabs(goal_dir) < 112)
+          if (fabs(goal_dir) < 90)//112)
             exit_rate = 0.045;
           else
             exit_rate = 0.11;
@@ -197,7 +201,7 @@ RamblerAlgorithm::RamblerState RamblerAlgorithm::ProcessInput(
           // Otherwise, use the default exit rate of 0.155          
         }
       }
-      if (rand1 < v_fwd_norm * exit_rate / RAMBLER_HZ * 1000)
+      if (rand1 < v_fwd_norm * exit_rate * 2 / RAMBLER_HZ * 1000) // add a multiply by 1.5 to make it exit more. Or something.
       {
         wall_following_ = false;
         state_ = RamblerAlgorithm::WALL_DEPART;

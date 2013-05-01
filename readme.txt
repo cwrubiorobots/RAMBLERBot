@@ -7,7 +7,11 @@ Installation
 To install this library, put the entire folder in the Arduino Library directory:
 Arduino/libraries
 
-** If you're tracking the git repo, make sure the entire repository is here.
+Or, if you prefer, I believe you can stick it in your sketchbook libraries folder:
+ - Find your sketchbook location: In Arduino IDE-> File-> Preferences
+ - Place RAMBLERBot folder in YourSketchbook/libraries
+
+
 
 Building
 --------------------------------------------------------------------------------
