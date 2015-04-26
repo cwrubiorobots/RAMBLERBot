@@ -9,11 +9,12 @@
 #include <ZumoBuzzer.h>
 #include <Pushbutton.h>
 #include <Wire.h>
-#include <LSM303.h>
-#include <ZumoLights.h>
+//#include <LSM303.h>
+//#include <ZumoLights.h>
 #include <ZumoWhiskers.h>
 #include <RamblerSerialRcv.h>
 #include <RamblerAlgorithm.h>
+#include <Servo.h>
 
 // RAMBLERBot:
 // Implements the RAMBLER Algorithm for the Arduino platform
@@ -54,7 +55,7 @@ class RAMBLERBot
     // Member classes for hardware abstraction
     ZumoBuzzer buzzer_;
     ZumoMotors motors_; 
-    ZumoLights lights_;
+    //ZumoLights lights_;
     Pushbutton button_;
     ZumoWhiskers whiskers_;
     RamblerSerialRcv receiver_;
@@ -72,6 +73,8 @@ class RAMBLERBot
     int rand2_;
     int rand3_;
     unsigned long time_;
+    int clawPos_;
+    int lastPos_;
     
     // Member variables
     float v_;
@@ -92,10 +95,13 @@ class RAMBLERBot
       TEST_WALLFOLLOW,
       TEST_PIVOT,
       TEST_END,
-      PAUSE
+      TEST_SERVO,
+      PAUSE,
+      NUM_STATES
     };
     rambler_state_t state_;
   
 };
+
 
 #endif

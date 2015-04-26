@@ -1,11 +1,15 @@
 #include "RAMBLERBot.h"
 #include <EEPROM.h>
+#include <Servo.h> 
 
 #define LED_PIN 13
+#define SERVO_PIN 11
 
 #define USE_NEW_SEED 1
 #define SEED_ADDR_HIGH 0
 #define SEED_ADDR_LOW 1
+
+extern Servo mantisClaw;
 
 int fabs(int val)
 {
@@ -51,10 +55,15 @@ int GetRandomValue()
 // constructor
 RAMBLERBot::RAMBLERBot(): button_(ZUMO_BUTTON)
 {
+  //mantisClaw.attach(SERVO_PIN);
+  clawPos_ = 100;
+  // mantisClaw.write(100);
+  // delay(1000);
   pinMode(LED_PIN, OUTPUT);
   state_ = ESTOP;
   heading_ = 0;
   setAccel(25);
+  index_ = 0;
 
   headingAvg_.SetWindow(10);
 }
@@ -63,7 +72,9 @@ void RAMBLERBot::init()
 {
   // Initialize compass if using it
   // (I'm not using a compass)
-  
+  // mantisClaw.write(20);
+  // delay(1000);
+  index_ = 0;
   //SeedRandomGenerator();
 }
 
@@ -149,11 +160,14 @@ void RAMBLERBot::loop10Hz()
     motor_right_ = 0;
     motor_left_goal_ = 0;
     motor_right_goal_ = 0;
-    lights_.AllOff();                   // Turn off lights
+    //lights_.AllOff();                   // Turn off lights
     whiskers_.ResetCalibration();       // Reset the whisker
-    buzzer_.playNote(NOTE_G(5),100,15); // Play a sound
+    //buzzer_.playNote(NOTE_G(4),100,15); // Play a sound
     button_.waitForRelease();           // wait here for the button to be released
   }
+  
+  //change state here to test code! //////////////////////////////////////////
+  state_ = TEST_SERVO;
   
   // Progress through the overall Robot States
   switch (state_)
@@ -161,7 +175,7 @@ void RAMBLERBot::loop10Hz()
     case ESTOP:
       if (index_++ >= 5)
       {
-        lights_.ToggleLED2();
+        //lights_.ToggleLED2();
         index_ = 0;
       }
       motor_left_goal_ = 0;
@@ -170,7 +184,7 @@ void RAMBLERBot::loop10Hz()
       {
         // Prepare for the robot to run!!!
         index_ = 0;
-        lights_.TurnOffLED2();     // Turn off lights
+        //lights_.TurnOffLED2();     // Turn off lights
         state_ = ESTOP_TO_ACTIVE;  // Next State
         SeedRandomGenerator();     // Seed generator
         button_.waitForRelease();  // wait here for the button to be released
@@ -182,7 +196,7 @@ void RAMBLERBot::loop10Hz()
       {
         if (++index_ % 2 == 0)
         {
-          buzzer_.playNote(NOTE_G(5),100,15);
+          //buzzer_.playNote(NOTE_G(5),100,15);
         }
       }
       else
@@ -212,7 +226,7 @@ void RAMBLERBot::loop10Hz()
       //goal_dir = 1000;
       brain.ProcessInput(rand1_,rand2_,rand3_,v_fwd,heading,ant_right_,ant_left_,goal_dir);
       brain.GetVelocity(&motor_left_goal_, &motor_right_goal_);
-      lights_.DisplayChar(brain.getLights());
+      //lights_.DisplayChar(brain.getLights());
       
       // Calc new velocity
       v_fwd = (motor_right_+motor_left_)/2;
@@ -249,7 +263,8 @@ void RAMBLERBot::loop10Hz()
     case TEST_FORWARD:
       motor_left_goal_ = 250;
       motor_right_goal_ = 250;
-      state_ = TEST_PIVOT;
+      //buzzer_.playNote(NOTE_G(2),100,5); // Play a sound
+      state_ = TEST_FORWARD;
     break;
     
     case TEST_WALLFOLLOW:
@@ -271,6 +286,29 @@ void RAMBLERBot::loop10Hz()
       //Serial.print("LeftMotor: ");
       //Serial.println(motor_left_goal_);
       
+    break;
+    
+    case TEST_SERVO:
+      
+      
+      if (index_ <= 10) 
+      {
+        clawPos_ = 20; 
+        index_++;
+        buzzer_.playNote(NOTE_G(2),50,10);
+      }
+      else if (index_ <= 20)
+      {                                  
+        clawPos_ = (index_*8)-40;
+        index_++;
+      } 
+      else
+      {
+        clawPos_ = 20;
+        index_ = 0;
+      }
+      mantisClaw.write(clawPos_);
+      state_ = TEST_SERVO;
     break;
     
     case TEST_PIVOT:
